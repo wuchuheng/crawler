@@ -1,0 +1,57 @@
+version: "3"
+services:
+  php_cli:
+    #build: .
+      image: wuchuheng/php_cli_crawler:latest
+      volumes:
+        - ./src:/crawler/:rw
+      restart: always
+      working_dir: /crawler
+      links:
+        - redis
+        - mysql
+      tty: true
+
+  mysql:
+    image: mysql:${MYSQL_VERSION}
+    ports:
+      - "${MYSQL_HOST_PORT}:3306"
+    volumes:
+      - ${MYSQL_CONF_FILE}:/etc/mysql/conf.d/mysql.cnf:ro
+      - ${MYSQL_DATA_DIR}:/var/lib/mysql/:rw
+    restart: always
+    networks:
+      - default
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+
+  redis:
+    image: redis:${REDIS_VERSION}
+    restart: always
+    networks:
+      - default
+    ports:
+      - "${REDIS_HOST_PORT}:6379"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - "${PHPMYADMIN_HOST_PORT}:80"
+    networks:
+      - default
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+
+  phpredisadmin:
+    image: erikdubbelboer/phpredisadmin:latest
+    ports:
+      - "${REDISMYADMIN_HOST_PORT}:80"
+    networks:
+      - default
+    environment:
+      - REDIS_1_HOST=redis
+      - REDIS_1_PORT=6379
+
+networks:
+  default:
